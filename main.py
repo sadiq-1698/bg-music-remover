@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, BackgroundTasks
+from fastapi import FastAPI, UploadFile, BackgroundTasks, HTTPException
 from fastapi.responses import HTMLResponse, FileResponse
 from pydub import AudioSegment
 import os
@@ -23,7 +23,13 @@ def read_root():
 @app.post("/uploadfiles/")
 async def upload_files(files: list[UploadFile], background_tasks: BackgroundTasks):
     saved_files = []
+
     for file in files:
+        # Check the size of the file (file.size is in bytes)
+        if file.size > 5 * 1024 * 1024:  # 5MB in bytes
+            raise HTTPException(
+                status_code=413, detail=f"File {file.filename} is too large. Maximum size is 5MB.")
+
         file_location = os.path.join(UPLOAD_DIR, file.filename)
         with open(file_location, "wb") as f:
             f.write(await file.read())
@@ -39,7 +45,6 @@ async def upload_files(files: list[UploadFile], background_tasks: BackgroundTask
     return FileResponse(saved_files[0], media_type='audio/mpeg', filename=os.path.basename(saved_files[0]))
 
 
-
 def process_file(file_path: str) -> str:
     # Load the audio file
     audio = AudioSegment.from_file(file_path, format="mp3")
@@ -52,6 +57,7 @@ def process_file(file_path: str) -> str:
     processed_audio.export(processed_file_path, format="mp3")
 
     return processed_file_path
+
 
 def delete_files(file_paths: list[str]):
     for file_path in file_paths:
