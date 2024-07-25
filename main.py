@@ -4,7 +4,11 @@ from pydub import AudioSegment
 import os
 import time
 
-app = FastAPI()
+app = FastAPI(
+    title="Audio Processing API",
+    description="An API to upload, process, and download MP3 files.",
+    version="1.0.0",
+)
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
