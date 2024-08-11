@@ -1,0 +1,12 @@
+services:
+  fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - ENV=development  # You can set other environment variables here if needed
+    restart: unless-stopped
